@@ -197,9 +197,9 @@ async function editTicket(id: string, ownerID: string, queueID: string, status: 
 /**
  * Deletes a ticket with the given ID.
  */
-async function deleteTicket(id: string, queueID: string, status: TicketStatus, ta: boolean): Promise<void> {
+async function deleteTicket(id: string, queueID: string, status: TicketStatus): Promise<void> {
     try {
-        await APIClient.post(`/queues/${queueID}/ticket/delete`, {id, status, ta});
+        await APIClient.post(`/queues/${queueID}/ticket/delete`, {id, status});
         return;
     } catch (e) {
         throw e;
