@@ -1,4 +1,4 @@
-import React, {FC, useState} from "react";
+import React, { FC, useState } from "react";
 import {
     Box,
     Divider,
@@ -28,8 +28,8 @@ import QueueAPI, {MaskPolicy, Queue} from "@util/queue/api";
 import EditQueueDialog from "@components/queue/EditQueueDialog";
 import ReopenQueueDialog from "@components/queue/ReopenQueueDialog";
 import MakeAnnouncementDialog from "@components/queue/MakeAnnouncementDialog";
-import {useAuth} from "@util/auth/hooks";
-import {toast} from "react-hot-toast";
+import { useAuth } from "@util/auth/hooks";
+import { toast } from "react-hot-toast";
 import formatEndTime from "@util/shared/formatEndTime";
 import {add} from "date-fns";
 import playDoorbell from "@util/shared/playDoorbell";
@@ -61,8 +61,10 @@ const QueueOptions: FC<QueueOptionsProps> = ({
     const [openAnnounceDialog, setOpenAnnounceDialog] = useState(false);
 
     const isEnded = queue.endTime < new Date();
-    const isLongEnded = add(queue.endTime, {minutes: 30}) < new Date();
+    const isLongEnded = add(queue.endTime, { minutes: 30 }) < new Date();
     // const isLongEnded = queue.endTime < new Date();
+
+    const lastTicketID = queue.tickets[queue.tickets.length - 1];
 
     return <>
         <EditQueueDialog queueID={queueID} queue={queue} open={openEditDialog}
@@ -70,14 +72,14 @@ const QueueOptions: FC<QueueOptionsProps> = ({
         <ReopenQueueDialog queueID={queueID} queue={queue} open={openReopenDialog}
                            onClose={() => setOpenReopenDialog(false)}/>
         <MakeAnnouncementDialog queueID={queueID} open={openAnnounceDialog}
-                                onClose={() => setOpenAnnounceDialog(false)}/>
+            onClose={() => setOpenAnnounceDialog(false)} />
         <Grid item xs={12} md={3}>
-            <Stack spacing={3} divider={<Divider/>}>
+            <Stack spacing={3} divider={<Divider />}>
                 <Box width="100%">
                     <Typography variant="h6">
                         About
                     </Typography>
-                    <Typography variant="body1" style={{wordWrap: "break-word"}}>
+                    <Typography variant="body1" style={{ wordWrap: "break-word" }}>
                         {queue.description}
                     </Typography>
 
@@ -89,13 +91,13 @@ const QueueOptions: FC<QueueOptionsProps> = ({
                             </Typography>
                         </Stack>
                         <Stack direction="row" alignItems="center" spacing={1}>
-                            <LocationOnIcon/>
-                            <Typography style={{overflow: "hidden", textOverflow: "ellipsis", width: '10rem'}}>
+                            <LocationOnIcon />
+                            <Typography style={{ overflow: "hidden", textOverflow: "ellipsis", width: '10rem' }}>
                                 {queue.location}
                             </Typography>
                         </Stack>
                         <Stack direction="row" alignItems="center" spacing={1}>
-                            <AccessTimeIcon/>
+                            <AccessTimeIcon />
                             <Typography>
                                 {formatEndTime(queue.endTime)}
                             </Typography>
@@ -194,9 +196,9 @@ const QueueOptions: FC<QueueOptionsProps> = ({
                         {isEnded ? <ListItem disablePadding>
                             <ListItemButton onClick={() => setOpenReopenDialog(true)}>
                                 <ListItemIcon>
-                                    <RestartAltIcon/>
+                                    <RestartAltIcon />
                                 </ListItemIcon>
-                                <ListItemText primary="Reopen queue"/>
+                                <ListItemText primary="Reopen queue" />
                             </ListItemButton>
                         </ListItem> : <ListItem disablePadding>
                             <ListItemButton onClick={() => {
@@ -209,9 +211,9 @@ const QueueOptions: FC<QueueOptionsProps> = ({
                                 }
                             }}>
                                 <ListItemIcon>
-                                    <CancelIcon/>
+                                    <CancelIcon />
                                 </ListItemIcon>
-                                <ListItemText primary="End queue"/>
+                                <ListItemText primary="End queue" />
                             </ListItemButton>
                         </ListItem>}
                     </List>
