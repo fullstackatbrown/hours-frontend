@@ -4,7 +4,7 @@ import {
     signInWithPopup,
 } from "firebase/auth";
 import APIClient from "@util/APIClient";
-import {Timestamp} from "@firebase/firestore";
+import { Timestamp } from "@firebase/firestore";
 
 const enum Endpoint {
     ME = '/users/me',
@@ -30,6 +30,7 @@ export interface User {
     photoUrl: string;
     isAdmin: boolean;
     pronouns?: string;
+    phoneNumber?: string;
     meetingLink?: string;
     coursePermissions: { [key: string]: CoursePermission };
     notifications: Notification[]
@@ -73,10 +74,10 @@ async function getUserById(id: string): Promise<User> {
 /**
  * Fetches profile information corresponding to the currently logged-in user.
  */
-async function updateUser(displayName: string, pronouns: string, meetingLink: string): Promise<void> {
+async function updateUser(displayName: string, pronouns: string, meetingLink: string, phoneNumber: string): Promise<void> {
     try {
         return await APIClient.post(`${Endpoint.UPDATE}`, {
-            displayName, pronouns, meetingLink
+            displayName, pronouns, meetingLink, phoneNumber
         });
     } catch (e) {
         throw e;
@@ -114,7 +115,7 @@ async function signInWithGoogle() {
                 .then((idToken) => {
                     // Session login endpoint is queried and the session cookie is set.
                     // TODO: CSRF protection should be taken into account.
-                    return APIClient.post(Endpoint.GET_SESSION, {token: idToken.toString()});
+                    return APIClient.post(Endpoint.GET_SESSION, { token: idToken.toString() });
                 });
         })
         .catch(() => {
@@ -141,7 +142,7 @@ async function signOut(): Promise<void> {
  */
 async function clearNotification(notification: Notification): Promise<void> {
     try {
-        return await APIClient.post(Endpoint.CLEAR_NOTIFICATION, {notificationId: notification.ID});
+        return await APIClient.post(Endpoint.CLEAR_NOTIFICATION, { notificationId: notification.ID });
     } catch (e) {
         throw e;
     }
