@@ -14,7 +14,10 @@ export interface Queue {
     cutoffTicketID: string;
     allowTicketEditing: boolean;
     showMeetingLinks: boolean;
-    tickets: string[];
+    pendingTickets: string[];
+    completedTickets: string[];
+    faceMaskPolicy: MaskPolicy;
+    rejoinCooldown: number;
 }
 
 export const enum TicketStatus {
@@ -23,6 +26,13 @@ export const enum TicketStatus {
     StatusMissing = "MISSING",
     StatusComplete = "COMPLETE",
     StatusReturned = "RETURNED",
+}
+
+// Describes the possible mask policy options.
+export const enum MaskPolicy {
+    NoMaskPolicy,
+    MasksRecommended,
+    MasksRequired,
 }
 
 export interface TicketUserdata {
@@ -37,6 +47,7 @@ export interface Ticket {
     id: string;
     user: TicketUserdata;
     createdAt: Timestamp;
+    completedAt?: Timestamp;
     claimedAt?: Timestamp;
     claimedBy?: string;
     completedAt?: Timestamp;
@@ -56,6 +67,8 @@ export interface CreateQueueRequest {
     allowTicketEditing: boolean;
     showMeetingLinks: boolean;
     courseID: string;
+    faceMaskPolicy: MaskPolicy;
+    rejoinCooldown: number;
 }
 
 /**
@@ -79,6 +92,8 @@ export interface EditQueueRequest {
     allowTicketEditing: boolean;
     showMeetingLinks: boolean;
     isCutOff: boolean;
+    faceMaskPolicy: MaskPolicy;
+    rejoinCooldown: number;
 }
 
 /**
@@ -132,7 +147,9 @@ async function endQueue(queue: Queue): Promise<void> {
             isCutOff: queue.isCutOff,
             allowTicketEditing: queue.allowTicketEditing,
             location: queue.location,
-            showMeetingLinks: queue.showMeetingLinks
+            showMeetingLinks: queue.showMeetingLinks,
+            faceMaskPolicy: queue.faceMaskPolicy,
+            rejoinCooldown: queue.rejoinCooldown,
         });
         return;
     } catch (e) {
