@@ -1,17 +1,20 @@
-import {FC} from "react";
+import {FC, useState} from "react";
 import {
+    Alert,
+    Box,
+    Checkbox,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    Stack,
-    TextField,
     FormControlLabel,
-    Checkbox
+    Stack,
+    TextField
 } from "@mui/material";
 import Button from "@components/shared/Button";
+import MasksIcon from '@mui/icons-material/Masks';
 import {useForm} from "react-hook-form";
-import QueueAPI from "@util/queue/api";
+import QueueAPI, {MaskPolicy} from "@util/queue/api";
 import {toast} from "react-hot-toast";
 import errors from "@util/errors";
 
@@ -19,6 +22,7 @@ export interface CreateTicketDialogProps {
     open: boolean;
     onClose: () => void;
     queueID: string;
+    faceMaskPolicy: MaskPolicy;
 }
 
 type FormData = {
@@ -26,9 +30,11 @@ type FormData = {
     anonymize: boolean;
 };
 
-const CreateTicketDialog: FC<CreateTicketDialogProps> = ({open, onClose, queueID}) => {
+const CreateTicketDialog: FC<CreateTicketDialogProps> = ({open, onClose, queueID, faceMaskPolicy}) => {
     const {register, handleSubmit, reset, formState: {}} = useForm<FormData>();
+    const [isLoading, setIsLoading] = useState(false);
     const onSubmit = handleSubmit(async data => {
+        setIsLoading(true);
         if ("Notification" in window) {
             // check for desktop notification permission
             const currPermissionStatus = Notification.permission;
@@ -47,10 +53,12 @@ const CreateTicketDialog: FC<CreateTicketDialogProps> = ({open, onClose, queueID
             .then(() => {
                 onClose();
                 reset();
+                setIsLoading(false);
             })
             .catch(() => {
                 onClose();
                 reset();
+                setIsLoading(false);
             });
     });
 
@@ -73,10 +81,26 @@ const CreateTicketDialog: FC<CreateTicketDialogProps> = ({open, onClose, queueID
                 </Stack>
                 <FormControlLabel control={<Checkbox {...register("anonymize")}/>}
                                   label="Hide your name from other students in the queue"/>
+                {faceMaskPolicy == MaskPolicy.MasksRecommended && <Box sx={{my: 2}}>
+                    <Alert
+                        icon={<MasksIcon fontSize="inherit"/>}
+                        severity="info">
+                        <strong>Face mask recommended.</strong> We suggest that you wear a face covering if you&apos;re
+                        attending this section in person.
+                    </Alert>
+                </Box>}
+                {faceMaskPolicy == MaskPolicy.MasksRequired && <Box sx={{my: 2}}>
+                    <Alert
+                        icon={<MasksIcon fontSize="inherit"/>}
+                        severity="warning">
+                        <strong>Face mask required.</strong> You must wear a face covering if attending this section in
+                        person or you may be turned away.
+                    </Alert>
+                </Box>}
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Cancel</Button>
-                <Button type="submit" variant="contained">Add</Button>
+                <Button type="submit" variant="contained" loading={isLoading}>Join</Button>
             </DialogActions>
         </form>
     </Dialog>;
