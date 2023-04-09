@@ -20,6 +20,7 @@ type FormData = {
     pronouns: string;
     meetingLink: string;
     phoneNumber: string;
+    phoneCountryCode: string;
     phoneIsValid: boolean;
 };
 
@@ -106,7 +107,7 @@ const ProfileInfoSection: FC<ProfileInfoSectionProps> = ({ }) => {
             setLoading(false);
             return;
         } else {
-            toast.promise(AuthAPI.updateUser(data.displayName, data.pronouns, data.meetingLink, data.phoneNumber), {
+            toast.promise(AuthAPI.updateUser(data.displayName, data.pronouns, data.meetingLink, data.phoneNumber, data.phoneCountryCode), {
                 loading: "Updating user profile...",
                 success: "User profile updated",
                 error: errors.UNKNOWN,
@@ -141,13 +142,14 @@ const ProfileInfoSection: FC<ProfileInfoSectionProps> = ({ }) => {
                     placeholder={"Enter phone number"}
                     value={currentUser?.phoneNumber}
                     onChange={(value, country: any, e, formattedValue) => {
-                        const { format, dialCode } = country;
+                        const { format, dialCode, countryCode } = country;
                         if (format?.length === formattedValue?.length && (value.startsWith(dialCode) || dialCode.startsWith(value))) {
                             setValue("phoneIsValid", true);
                         } else {
                             setValue("phoneIsValid", false);
                         }
                         setValue("phoneNumber", value);
+                        setValue("phoneCountryCode", countryCode);
                     }}
                 />
                 <Stack direction="row" justifyContent="end">

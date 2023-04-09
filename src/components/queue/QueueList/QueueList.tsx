@@ -1,16 +1,15 @@
-
-import React, {FC, useEffect, useMemo, useState} from "react";
-import {Box, ButtonProps, CircularProgress, Grid, Stack, Typography,} from "@mui/material";
+import React, { FC, useEffect, useMemo, useState } from "react";
+import { Box, ButtonProps, CircularProgress, Grid, Stack, Typography, } from "@mui/material";
 import Button from "@components/shared/Button";
 import CreateTicketDialog from "@components/queue/CreateTicketDialog";
 import QueueListItem from "@components/queue/QueueListItem";
-import {useTickets} from "@util/queue/hooks";
-import {Queue, Ticket, TicketStatus} from "@util/queue/api";
-import {useAuth} from "@util/auth/hooks";
+import { useTickets } from "@util/queue/hooks";
+import { Queue, Ticket, TicketStatus } from "@util/queue/api";
+import { useAuth } from "@util/auth/hooks";
 import BouncingCubesAnimation from "@components/animations/BouncingCubesAnimation";
 import playDoorbell from "@util/shared/playDoorbell";
 import getEmptyQueueString from "@util/shared/getEmptyQueueString";
-import {useRouter} from "next/router";
+import { useRouter } from "next/router";
 
 interface JoinButtonContentProps {
     queueCooldownMinutes: number;
@@ -20,7 +19,7 @@ interface JoinButtonContentProps {
 }
 
 const JoinButton = (props: JoinButtonContentProps) => {
-    const {queueCooldownMinutes, lastTicket, onClick, loading} = props;
+    const { queueCooldownMinutes, lastTicket, onClick, loading } = props;
     const [disabled, setDisabled] = useState(computeState().disabled);
     const [cooldown, setCooldown] = useState<string | null>(computeState().cooldown);
 
@@ -30,22 +29,22 @@ const JoinButton = (props: JoinButtonContentProps) => {
     // enabled && (cooldown === null) -> "Join Queue"
     function computeState(): { disabled: boolean; cooldown: string | null } {
         if (loading) {
-            return {disabled: true, cooldown: null};
+            return { disabled: true, cooldown: null };
         }
         if (!lastTicket) {
-            return {disabled: false, cooldown: null};
+            return { disabled: false, cooldown: null };
         }
         if (queueCooldownMinutes === 0) {
-            return {disabled: false, cooldown: null};
+            return { disabled: false, cooldown: null };
         }
         if (queueCooldownMinutes === -1) {
-            return {disabled: true, cooldown: null};
+            return { disabled: true, cooldown: null };
         }
 
         const completedAt = lastTicket.completedAt;
         // In the queue
         if (!completedAt) {
-            return {disabled: true, cooldown: null};
+            return { disabled: true, cooldown: null };
         }
 
         const eligibilityMillis =
@@ -63,7 +62,7 @@ const JoinButton = (props: JoinButtonContentProps) => {
                 cooldown: `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`
             };
         } else {
-            return {disabled: false, cooldown: null};
+            return { disabled: false, cooldown: null };
         }
     }
 
@@ -91,7 +90,7 @@ const JoinButton = (props: JoinButtonContentProps) => {
 
     return (
         <Button variant="contained" onClick={onClick} disabled={disabled}>
-            <Box className="timer" sx={{width: `10ch`}}>
+            <Box className="timer" sx={{ width: `10ch` }}>
                 Join
                 {cooldown === null ? ` Queue` : ` in ${cooldown}`}
             </Box>
@@ -107,8 +106,8 @@ export interface QueueListProps {
 /**
  * QueueList lists out the tickets in a queue.
  */
-const QueueList: FC<QueueListProps> = ({queue, playSound}) => {
-    const {currentUser, isTA} = useAuth();
+const QueueList: FC<QueueListProps> = ({ queue, playSound }) => {
+    const { currentUser, isTA } = useAuth();
     const [tickets, ticketsLoading] = useTickets(queue.id);
     const [createTicketDialog, setCreateTicketDialog] = useState(false);
 
@@ -120,7 +119,7 @@ const QueueList: FC<QueueListProps> = ({queue, playSound}) => {
     const router = useRouter();
 
     // ?allowTATickets=true to allow TAs to create tickets
-    const {allowTATickets} = router.query;
+    const { allowTATickets } = router.query;
 
     useEffect(() => {
         if ((queue.pendingTickets.length > prevTicketsLength) && isTA(queue.course.id)) {
@@ -128,64 +127,11 @@ const QueueList: FC<QueueListProps> = ({queue, playSound}) => {
                 playDoorbell();
             }
 
-  const EmptyQueue = () => (
-    <Stack mt={4} spacing={2} justifyContent="center" alignItems="center">
-      {!queueEnded && <BouncingCubesAnimation />}
-      <Typography variant="body1">
-        {queueEnded
-          ? "This queue is no longer active."
-          : "Nobody is here... yet 😉."}
-      </Typography>
-    </Stack>
-  );
-
-  // Split sortedTickets into ticketsBeforeCutoff and ticketsAfterCutoff arrays
-  const ticketsBeforeCutoff: Ticket[] = [];
-  const ticketsAfterCutoff: Ticket[] = [];
-  let pastCutoff = !queue.cutoffTicketID && queue.isCutOff;
-  for (const ticket of sortedTickets) {
-    if (!ticket) continue;
-    if (pastCutoff) {
-      ticketsAfterCutoff.push(ticket);
-    } else {
-      ticketsBeforeCutoff.push(ticket);
-    }
-    if (ticket.id === queue.cutoffTicketID && queue.isCutOff) {
-      pastCutoff = true;
-    }
-  }
-  return (<>
-    <CreateTicketDialog open={createTicketDialog} onClose={() => setCreateTicketDialog(false)}
-                        queueID={queue.id}/>
-    <Grid item xs={12} md={9}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Typography variant="h6" fontWeight={600}>
-          Queue
-        </Typography>
-        {!queueEnded && !inQueue && !isTA(queue.course.id) &&
-            <Tooltip title={disabled ? `You must wait ${TICKET_COOLDOWN_MINUTES} minutes between tickets` : ""}>
-              <div>
-                <Button variant="contained" onClick={() => setCreateTicketDialog(true)} disabled={disabled}>
-                  Join Queue
-                </Button>
-              </div>
-            </Tooltip>
+            if ("Notification" in window) {
+                new Notification("A student has joined your queue.");
+            }
         }
-      </Stack>
-      <Box mt={1}>
-          {ticketsLoading && <Stack height={200} width={"100%"} justifyContent="center" alignItems="center">
-              <CircularProgress/>
-          </Stack>}
-          {ticketsBeforeCutoff &&
-              ticketsBeforeCutoff.map((ticket, index) => (
-              <QueueListItem
-                  key={ticket.id}
-                  queue={queue}
-                  ticket={ticket}
-                  position={index + 1}
-                  beforeCutoff={true}
-              />
-              ))}
+
         setPrevTicketsLength(queue.pendingTickets.length);
     }, [queue, prevTicketsLength, playSound]);
 
@@ -193,7 +139,7 @@ const QueueList: FC<QueueListProps> = ({queue, playSound}) => {
 
     const EmptyQueue = () => (
         <Stack mt={4} spacing={2} justifyContent="center" alignItems="center">
-            {!queueEnded && <BouncingCubesAnimation/>}
+            {!queueEnded && <BouncingCubesAnimation />}
             <Typography variant="h6" component="p">
                 {queueEnded ? "This queue is no longer active." : emptyQueueString}
             </Typography>
@@ -211,7 +157,7 @@ const QueueList: FC<QueueListProps> = ({queue, playSound}) => {
 
     return (<>
         <CreateTicketDialog open={createTicketDialog} onClose={() => setCreateTicketDialog(false)}
-                            queueID={queue.id} faceMaskPolicy={queue.faceMaskPolicy}/>
+            queueID={queue.id} faceMaskPolicy={queue.faceMaskPolicy} />
         <Grid item xs={12} md={9}>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Typography variant="h6" fontWeight={600}>
@@ -227,35 +173,20 @@ const QueueList: FC<QueueListProps> = ({queue, playSound}) => {
             </Stack>
             <Box mt={1}>
                 {ticketsLoading && <Stack height={200} width={"100%"} justifyContent="center" alignItems="center">
-                    <CircularProgress/>
+                    <CircularProgress />
                 </Stack>}
                 <Stack spacing={1}>
                     {sortedTickets && sortedTickets.map((ticket, index) => <QueueListItem key={ticket!.id}
-                                                                                          queue={queue}
-                                                                                          ticket={ticket!}
-                                                                                          position={index + 1}/>)}
-                    {!ticketsLoading && sortedTickets && sortedTickets.length == 0 && <EmptyQueue/>}
+                        queue={queue}
+                        ticket={ticket!}
+                        position={index + 1} />)}
+                    {!ticketsLoading && sortedTickets && sortedTickets.length == 0 && <EmptyQueue />}
                 </Stack>
             </Box>
         </Grid>
     </>);
 };
 
-          {ticketsAfterCutoff &&
-              ticketsAfterCutoff.map((ticket, index) => (
-              <QueueListItem
-                  key={ticket.id}
-                  queue={queue}
-                  ticket={ticket}
-                  position={index + 1 + ticketsBeforeCutoff.length}
-                  beforeCutoff={false}
-              />
-              ))}
-
-          {sortedTickets && sortedTickets.length == 0 && <EmptyQueue />}
-      </Box>
-    </Grid>
-  </>);
-};
-
 export default QueueList;
+
+

@@ -78,10 +78,10 @@ async function getUserById(id: string): Promise<User> {
 /**
  * Fetches profile information corresponding to the currently logged-in user.
  */
-async function updateUser(displayName: string, pronouns: string, meetingLink: string, phoneNumber: string): Promise<void> {
+async function updateUser(displayName: string, pronouns: string, meetingLink: string, phoneNumber: string, phoneCountryCode: string): Promise<void> {
     try {
         return await APIClient.post(`${Endpoint.UPDATE}`, {
-            displayName, pronouns, meetingLink, phoneNumber
+            displayName, pronouns, meetingLink, phoneNumber, phoneCountryCode
         });
     } catch (e) {
         throw e;
@@ -168,7 +168,7 @@ async function clearAllNotifications(): Promise<void> {
  */
 async function addFavoriteCourse(courseID: string): Promise<void> {
     try {
-        return await APIClient.post(Endpoint.ADD_FAVORITE_COURSES, {courseID});
+        return await APIClient.post(Endpoint.ADD_FAVORITE_COURSES, { courseID });
     } catch (e) {
         throw e;
     }
@@ -179,7 +179,7 @@ async function addFavoriteCourse(courseID: string): Promise<void> {
  */
 async function removeFavoriteCourse(courseID: string): Promise<void> {
     try {
-        return await APIClient.post(Endpoint.REMOVE_FAVORITE_COURSES, {courseID});
+        return await APIClient.post(Endpoint.REMOVE_FAVORITE_COURSES, { courseID });
     } catch (e) {
         throw e;
     }
